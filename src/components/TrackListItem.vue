@@ -10,19 +10,18 @@
     <img
       v-if="!isAlbum"
       :src="imgUrl"
+      loading="lazy"
       :class="{ hover: focus }"
       @click="goToAlbum"
     />
     <div v-if="showOrderNumber" class="no">
-      <button v-show="focus && track.playable && !isPlaying" @click="playTrack">
+      <button v-show="focus && playable && !isPlaying" @click="playTrack">
         <svg-icon
           icon-class="play"
           style="height: 14px; width: 14px"
         ></svg-icon>
       </button>
-      <span v-show="(!focus || !track.playable) && !isPlaying">{{
-        track.no
-      }}</span>
+      <span v-show="(!focus || !playable) && !isPlaying">{{ track.no }}</span>
       <button v-show="isPlaying">
         <svg-icon
           icon-class="volume"
@@ -114,6 +113,9 @@ export default {
         ? this.trackProp.simpleSong
         : this.trackProp;
     },
+    playable() {
+      return this.track?.privilege?.pl > 0 || this.track?.playable;
+    },
     imgUrl() {
       let image =
         this.track?.al?.picUrl ??
@@ -170,7 +172,7 @@ export default {
     },
     trackClass() {
       let trackClass = [this.type];
-      if (!this.track.playable && this.showUnavailableSongInGreyStyle)
+      if (!this.playable && this.showUnavailableSongInGreyStyle)
         trackClass.push('disable');
       if (this.isPlaying && this.highlightPlayingTrack)
         trackClass.push('playing');
@@ -207,6 +209,7 @@ export default {
 
   methods: {
     goToAlbum() {
+      if (this.track.al.id === 0) return;
       this.$router.push({ path: '/album/' + this.track.al.id });
     },
     playTrack() {
@@ -271,7 +274,6 @@ button {
   }
 
   .explicit-symbol.before-artist {
-    margin-right: 2px;
     .svg-icon {
       margin-bottom: -3px;
     }
@@ -363,6 +365,11 @@ button {
     opacity: 0.88;
     color: var(--color-text);
   }
+  .count {
+    font-weight: bold;
+    font-size: 22px;
+    line-height: 22px;
+  }
 }
 
 .track.focus {
@@ -424,7 +431,8 @@ button {
   }
   .title .featured,
   .artist,
-  .explicit-symbol {
+  .explicit-symbol,
+  .count {
     color: var(--color-primary);
     opacity: 0.88;
   }
